@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>스퍼스 · 매버릭스 트래커</title>
+<style>
+:root {
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  --bg: #f6f6f4;
+  --surface: #ffffff;
+  --surface-2: #f0f0ed;
+  --text: #17181a;
+  --muted: #6b6f76;
+  --line: #e2e2dd;
+  --win: #1a8a4a;
+  --loss: #c23b3b;
+  --live: #d97706;
+  --spurs: #2b2d31;
+  --spurs-ink: #ffffff;
+  --mavs: #1456c8;
+  --mavs-ink: #ffffff;
+  --hl: #fff6d6;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101113; --surface: #1a1b1e; --surface-2: #24262a; --text: #ececea;
+    --muted: #9a9ea6; --line: #2e3035; --win: #43c277; --loss: #ee6b6b; --live: #f5a524;
+    --spurs: #d4d6da; --spurs-ink: #17181a; --mavs: #5b93f0; --mavs-ink: #0c1220; --hl: #3a3417;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101113; --surface: #1a1b1e; --surface-2: #24262a; --text: #ececea;
+  --muted: #9a9ea6; --line: #2e3035; --win: #43c277; --loss: #ee6b6b; --live: #f5a524;
+  --spurs: #d4d6da; --spurs-ink: #17181a; --mavs: #5b93f0; --mavs-ink: #0c1220; --hl: #3a3417;
+  color-scheme: dark;
+}
+html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100%; background: var(--bg); color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", "Segoe UI", Roboto, sans-serif;
+  line-height: 1.45; -webkit-font-smoothing: antialiased;
+}
+.wrap { max-width: 920px; margin: 0 auto; padding: 20px 16px 48px; }
+header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 16px; margin-bottom: 14px; }
+h1 { font-size: 22px; margin: 0; letter-spacing: -0.02em; }
+.stamp { font-size: 12.5px; color: var(--muted); }
+.notice {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px;
+  padding: 10px 14px; font-size: 13px; color: var(--muted); margin-bottom: 16px;
+}
+.notice b { color: var(--text); font-weight: 600; }
+
+.teams { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+@media (max-width: 640px) { .teams { grid-template-columns: 1fr; } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+.team-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
+.badge {
+  width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 700; font-size: 14px; letter-spacing: 0.02em; flex: none;
+}
+.badge.SAS { background: var(--spurs); color: var(--spurs-ink); }
+.badge.DAL { background: var(--mavs); color: var(--mavs-ink); }
+.team-name { font-weight: 650; font-size: 17px; letter-spacing: -0.01em; }
+.team-sub { font-size: 12.5px; color: var(--muted); }
+.record { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
+.record .wl { font-size: 38px; font-weight: 700; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.record .pct { color: var(--muted); font-size: 14px; font-variant-numeric: tabular-nums; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.chip { background: var(--surface-2); border-radius: 999px; padding: 4px 10px; font-size: 12.5px; }
+.form { display: flex; align-items: center; gap: 5px; margin-bottom: 14px; font-size: 12.5px; color: var(--muted); }
+.dot { width: 22px; height: 22px; border-radius: 6px; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: #fff; }
+.dot.W { background: var(--win); } .dot.L { background: var(--loss); }
+html[data-theme="dark"] .dot, :root:not([data-theme="light"]) .dot { color: #0d0e10; }
+@media (prefers-color-scheme: light) { :root:not([data-theme="dark"]) .dot { color: #fff; } }
+.next { border-top: 1px solid var(--line); padding-top: 12px; font-size: 13.5px; }
+.next .lbl { color: var(--muted); font-size: 12px; margin-bottom: 2px; }
+.next .big { font-weight: 600; }
+.next .cd { color: var(--muted); font-size: 12.5px; }
+
+.tabs { display: flex; gap: 6px; margin-bottom: 10px; flex-wrap: wrap; }
+.tab {
+  border: 1px solid var(--line); background: var(--surface); color: var(--text);
+  border-radius: 999px; padding: 7px 14px; font-size: 13.5px; cursor: pointer; font-family: inherit;
+}
+.tab[aria-selected="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+h2 { font-size: 16px; margin: 22px 0 10px; letter-spacing: -0.01em; }
+.scroll { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; }
+td.n, th.n { text-align: right; }
+tr:last-child td { border-bottom: 0; }
+tr.hl-SAS td, tr.hl-DAL td { background: var(--hl); }
+.res { font-weight: 700; }
+.res.W { color: var(--win); } .res.L { color: var(--loss); } .res.P { color: var(--live); font-weight: 600; }
+.muted { color: var(--muted); }
+.h2h { font-size: 13.5px; }
+.players { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 640px) { .players { grid-template-columns: 1fr; } }
+.pl-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 8px; margin-bottom: 8px; }
+.stat { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; }
+.stat .v { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.stat .k { font-size: 11.5px; color: var(--muted); }
+.pl-note { font-size: 12px; color: var(--muted); margin: 6px 0 12px; }
+.pl-sub { font-size: 12.5px; font-weight: 600; margin: 4px 0 2px; }
+.pl-table table { font-size: 13px; }
+.pl-table th, .pl-table td { padding: 7px 8px; }
+footer { margin-top: 28px; font-size: 12px; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>스퍼스 · 매버릭스 트래커</h1>
+    <div class="stamp" id="stamp"></div>
+  </header>
+  <div class="notice">
+    <b>스냅샷 페이지예요.</b> 이 페이지는 외부 사이트에서 데이터를 직접 불러오지 못해서, 만든 시점의 데이터를 담고 있어요. 경기 시간은 한국 시간(KST)이고, 지난 경기 결과는 Claude에게 "트래커 업데이트해줘"라고 하면 다시 반영해 드려요.
+  </div>
+
+  <section class="teams" id="teams"></section>
+
+  <div class="card h2h" id="h2h"></div>
+
+  <h2>개인 기록</h2>
+  <div class="players" id="players"></div>
+
+  <h2>경기 일정 · 결과</h2>
+  <div class="tabs" role="tablist" id="tabs">
+    <button class="tab" role="tab" data-t="SAS" aria-selected="true">샌안토니오</button>
+    <button class="tab" role="tab" data-t="DAL" aria-selected="false">댈러스</button>
+  </div>
+  <div class="card scroll" id="sched"></div>
+
+  <h2>서부 컨퍼런스 순위</h2>
+  <div class="card scroll" id="west"></div>
+
+  <footer>데이터 출처: SportRadar(순위·전적·최근 경기 기록), ESPN·CBS Sports(플래그 시즌 평균), NBA.com·Basketball-Reference 인용 보도(웸반야마 시즌 평균). 선수 시즌 평균은 출처마다 기준일이 달라 근사치예요.</footer>
+</div>
+
+<script>
+const NAMES = {
+  ATL:"애틀랜타 호크스", BOS:"보스턴 셀틱스", BKN:"브루클린 네츠", CHA:"샬럿 호네츠", CHI:"시카고 불스",
+  CLE:"클리블랜드 캐벌리어스", DAL:"댈러스 매버릭스", DEN:"덴버 너기츠", DET:"디트로이트 피스턴스",
+  GSW:"골든스테이트 워리어스", HOU:"휴스턴 로키츠", IND:"인디애나 페이서스", LAC:"LA 클리퍼스", LAL:"LA 레이커스",
+  MEM:"멤피스 그리즐리스", MIA:"마이애미 히트", MIL:"밀워키 벅스", MIN:"미네소타 팀버울브스",
+  NOP:"뉴올리언스 펠리컨스", NYK:"뉴욕 닉스", OKC:"오클라호마시티 썬더", ORL:"올랜도 매직",
+  PHI:"필라델피아 세븐티식서스", PHX:"피닉스 선즈", POR:"포틀랜드 트레일 블레이저스",
+  SAC:"새크라멘토 킹스", SAS:"샌안토니오 스퍼스", TOR:"토론토 랩터스", UTA:"유타 재즈", WAS:"워싱턴 위저즈"
+};
+
+// [abbr, wins, losses, conferenceRank, divisionRank]
+const WEST = [
+  ["SAS",11,2,1,1],["LAL",11,2,2,1],["HOU",10,3,3,2],["POR",9,3,4,1],["MIN",9,3,5,2],
+  ["MEM",8,4,6,3],["GSW",8,5,7,2],["OKC",8,5,8,3],["DEN",6,4,9,4],["DAL",7,5,10,4],
+  ["PHX",5,6,11,3],["NOP",4,9,12,5],["LAC",3,8,13,4],["SAC",1,11,14,5],["UTA",1,12,15,5]
+];
+
+// [startUTC, home, away, homeScore, awayScore]  (점수 null = 미종료/미반영)
+const GAMES = [
+  ["2026-10-21T01:30:00Z","SAS","OKC",104,116],
+  ["2026-10-22T00:30:00Z","HOU","DAL",128,110],
+  ["2026-10-23T23:00:00Z","IND","DAL",105,121],
+  ["2026-10-24T01:30:00Z","SAS","HOU",110,114],
+  ["2026-10-25T00:00:00Z","DAL","SAS",106,122],
+  ["2026-10-26T23:30:00Z","MIA","DAL",109,113],
+  ["2026-10-28T00:00:00Z","SAS","SAC",130,103],
+  ["2026-10-29T01:00:00Z","UTA","SAS",111,117],
+  ["2026-10-29T01:30:00Z","DAL","OKC",120,96],
+  ["2026-10-31T00:00:00Z","DAL","HOU",116,111],
+  ["2026-11-01T00:00:00Z","SAS","MIN",121,111],
+  ["2026-11-03T01:00:00Z","DAL","SAC",100,115],
+  ["2026-11-03T01:30:00Z","SAS","UTA",119,97],
+  ["2026-11-05T02:30:00Z","SAS","DAL",112,111],
+  ["2026-11-07T01:00:00Z","DAL","UTA",112,100],
+  ["2026-11-07T03:00:00Z","SAC","SAS",109,124],
+  ["2026-11-08T03:00:00Z","POR","SAS",103,125],
+  ["2026-11-09T00:30:00Z","DAL","BKN",130,93],
+  ["2026-11-10T01:00:00Z","DAL","IND",125,122],
+  ["2026-11-10T02:00:00Z","PHX","SAS",96,122],
+  ["2026-11-12T01:00:00Z","CHI","SAS",119,124],
+  ["2026-11-13T01:00:00Z","MIN","DAL",133,94],
+  ["2026-11-14T02:30:00Z","SAS","GSW",123,85],
+  ["2026-11-15T00:30:00Z","CLE","DAL",null,null],
+  ["2026-11-15T22:00:00Z","UTA","SAS",null,null],
+  ["2026-11-15T23:00:00Z","BOS","DAL",null,null],
+  ["2026-11-18T01:00:00Z","SAS","DET",null,null],
+  ["2026-11-19T01:00:00Z","DAL","GSW",null,null],
+  ["2026-11-20T01:00:00Z","SAS","LAC",null,null],
+  ["2026-11-22T01:00:00Z","SAS","NOP",null,null],
+  ["2026-11-22T01:00:00Z","DAL","LAC",null,null],
+  ["2026-11-23T00:00:00Z","UTA","DAL",null,null],
+  ["2026-11-24T03:00:00Z","SAC","SAS",null,null],
+  ["2026-11-25T03:00:00Z","DEN","DAL",null,null],
+  ["2026-11-26T03:00:00Z","POR","SAS",null,null],
+  ["2026-11-28T02:00:00Z","PHX","DAL",null,null],
+  ["2026-11-28T02:30:00Z","SAS","LAL",null,null],
+  ["2026-11-29T21:00:00Z","SAS","BOS",null,null],
+  ["2026-12-01T01:00:00Z","MIL","SAS",null,null],
+  ["2026-12-01T01:00:00Z","DAL","BOS",null,null],
+  ["2026-12-03T01:00:00Z","DAL","ORL",null,null],
+  ["2026-12-04T01:00:00Z","SAS","TOR",null,null],
+  ["2026-12-14T00:00:00Z","SAS","LAC",null,null],
+  ["2026-12-15T01:00:00Z","DAL","MIL",null,null],
+  ["2026-12-16T01:00:00Z","CLE","SAS",null,null],
+  ["2026-12-17T00:30:00Z","TOR","SAS",null,null],
+  ["2026-12-17T00:30:00Z","BKN","DAL",null,null],
+  ["2026-12-18T00:00:00Z","PHI","DAL",null,null],
+  ["2026-12-19T01:00:00Z","SAS","CHI",null,null],
+  ["2026-12-20T01:00:00Z","DAL","CHI",null,null],
+  ["2026-12-21T00:00:00Z","NOP","SAS",null,null],
+  ["2026-12-23T03:30:00Z","GSW","DAL",null,null],
+  ["2026-12-24T03:00:00Z","SAC","DAL",null,null],
+  ["2026-12-27T01:00:00Z","DAL","PHX",null,null]
+].map(g => ({ t: new Date(g[0]), home: g[1], away: g[2], hs: g[3], as: g[4] }));
+
+const TEAMS = ["SAS", "DAL"];
+const STALE_MS = 3.5 * 3600 * 1000;
+const fmtDate = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", weekday: "short" });
+const fmtTime = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hour12: false });
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+
+const isFinal = g => g.hs !== null && g.as !== null;
+const involves = (g, t) => g.home === t || g.away === t;
+const opp = (g, t) => g.home === t ? g.away : g.home;
+const myScore = (g, t) => g.home === t ? g.hs : g.as;
+const theirScore = (g, t) => g.home === t ? g.as : g.hs;
+const won = (g, t) => myScore(g, t) > theirScore(g, t);
+const sorted = arr => arr.slice().sort((a, b) => a.t - b.t);
+const teamGames = t => sorted(GAMES.filter(g => involves(g, t)));
+
+function countdown(ms) {
+  if (ms <= 0) return "곧 시작";
+  const m = Math.floor(ms / 60000), d = Math.floor(m / 1440), h = Math.floor((m % 1440) / 60), mm = m % 60;
+  if (d > 0) return d + "일 " + h + "시간 후";
+  if (h > 0) return h + "시간 " + mm + "분 후";
+  return mm + "분 후";
+}
+
+function whenText(g) { return fmtDate.format(g.t) + " " + fmtTime.format(g.t); }
+
+function renderTeams() {
+  const now = Date.now();
+  $("teams").innerHTML = TEAMS.map(t => {
+    const row = WEST.find(r => r[0] === t);
+    const [, w, l, cr, dr] = row;
+    const pct = (w / (w + l)).toFixed(3).replace(/^0/, "");
+    const fin = teamGames(t).filter(isFinal);
+    const last5 = fin.slice(-5).reverse();
+    let streak = 0, kind = null;
+    for (let i = fin.length - 1; i >= 0; i--) {
+      const r = won(fin[i], t) ? "W" : "L";
+      if (kind === null) kind = r;
+      if (r === kind) streak++; else break;
+    }
+    const nextG = teamGames(t).find(g => !isFinal(g) && g.t.getTime() + STALE_MS > now);
+    let nextHtml = '<div class="next"><div class="lbl">다음 경기</div><div class="big">일정 없음</div></div>';
+    if (nextG) {
+      const home = nextG.home === t;
+      const started = nextG.t.getTime() <= now;
+      nextHtml = '<div class="next"><div class="lbl">' + (started ? "진행 중이거나 방금 시작" : "다음 경기") + '</div>' +
+        '<div class="big">' + (home ? "vs " : "@ ") + esc(NAMES[opp(nextG, t)]) + '</div>' +
+        '<div class="cd">' + whenText(nextG) + ' · ' + (started ? "결과 업데이트 필요" : countdown(nextG.t - now)) + '</div></div>';
+    }
+    return '<article class="card">' +
+      '<div class="team-head"><div class="badge ' + t + '">' + t + '</div><div><div class="team-name">' + NAMES[t] + '</div><div class="team-sub">서부 컨퍼런스 · 서남부 디비전</div></div></div>' +
+      '<div class="record"><span class="wl">' + w + '-' + l + '</span><span class="pct">승률 ' + pct + '</span></div>' +
+      '<div class="chips"><span class="chip">서부 ' + cr + '위</span><span class="chip">디비전 ' + dr + '위</span>' +
+      (kind ? '<span class="chip">' + streak + (kind === "W" ? "연승" : "연패") + '</span>' : "") + '</div>' +
+      '<div class="form"><span>최근 5경기</span>' + last5.map(g => '<span class="dot ' + (won(g, t) ? "W" : "L") + '">' + (won(g, t) ? "승" : "패") + '</span>').join("") + '</div>' +
+      nextHtml + '</article>';
+  }).join("");
+}
+
+function renderH2H() {
+  const hh = sorted(GAMES.filter(g => involves(g, "SAS") && involves(g, "DAL") && isFinal(g)));
+  let sw = 0, dw = 0;
+  const lines = hh.map(g => {
+    const sasWon = won(g, "SAS"); if (sasWon) sw++; else dw++;
+    return fmtDate.format(g.t) + " " + (g.home === "SAS" ? "SAS" : "DAL") + " 홈 · SAS " + myScore(g, "SAS") + " : " + theirScore(g, "SAS") + " DAL";
+  });
+  $("h2h").innerHTML = "<b>올 시즌 맞대결</b> &nbsp; 스퍼스 " + sw + "승 " + dw + "패<div class=\"muted\" style=\"margin-top:4px\">" + lines.join("<br>") + "</div>";
+}
+
+let cur = "SAS";
+function renderSched() {
+  const t = cur, now = Date.now();
+  const rows = teamGames(t).map(g => {
+    const home = g.home === t, o = opp(g, t);
+    let res;
+    if (isFinal(g)) {
+      const W = won(g, t);
+      res = '<span class="res ' + (W ? "W" : "L") + '">' + (W ? "승" : "패") + '</span> ' + myScore(g, t) + ' : ' + theirScore(g, t);
+    } else if (g.t.getTime() <= now) {
+      res = '<span class="res P">결과 미반영</span>';
+    } else {
+      res = '<span class="muted">' + countdown(g.t - now) + '</span>';
+    }
+    return '<tr' + (isFinal(g) ? "" : "") + '><td>' + whenText(g) + '</td><td>' + (home ? "홈" : "원정") + '</td><td>' + esc(NAMES[o]) + '</td><td>' + res + '</td></tr>';
+  }).join("");
+  $("sched").innerHTML = '<table><thead><tr><th>일시 (KST)</th><th>구분</th><th>상대</th><th>결과</th></tr></thead><tbody>' + rows + '</tbody></table>';
+  document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.t === t ? "true" : "false"));
+}
+
+function renderWest() {
+  $("west").innerHTML = '<table><thead><tr><th class="n">#</th><th>팀</th><th class="n">승</th><th class="n">패</th><th class="n">승률</th></tr></thead><tbody>' +
+    WEST.slice().sort((a, b) => a[3] - b[3]).map(r => {
+      const hl = TEAMS.includes(r[0]) ? ' class="hl-' + r[0] + '"' : "";
+      return '<tr' + hl + '><td class="n">' + r[3] + '</td><td>' + NAMES[r[0]] + '</td><td class="n">' + r[1] + '</td><td class="n">' + r[2] + '</td><td class="n">' + (r[1] / (r[1] + r[2])).toFixed(3).replace(/^0/, "") + '</td></tr>';
+    }).join("") + '</tbody></table>';
+}
+
+document.getElementById("tabs").addEventListener("click", e => {
+  const b = e.target.closest(".tab"); if (!b) return;
+  cur = b.dataset.t; renderSched();
+});
+
+$("stamp").textContent = "데이터 기준: 2026년 11월 15일";
+const PLAYERS = [
+  { team: "SAS", name: "빅터 웸반야마", sub: "센터 · 등번호 1",
+    stats: [["28.8", "득점 ≈"], ["11.7", "리바운드 ≈"], ["4.3", "블록 ≈"]],
+    note: "13경기 기준 추정치예요. 11월 10일까지 11경기 평균(30.1점·11.9리바·4.5블록, NBA.com 인용 보도)에 이후 두 경기 박스스코어를 합산했고, 반올림 오차가 있어요. 시즌 최고는 52점·24리바운드(11/5 댈러스전), 블록 9개(11/10 피닉스전)예요.",
+    log: [["11/14", "vs GSW", "W", 12, 12, 6, 1, 2], ["11/12", "@ CHI", "W", 32, 9, 1, 2, 5], ["11/10", "@ PHX", "W", 40, 11, null, null, 9], ["11/8", "@ POR", "W", 29, 7, null, null, 2], ["11/7", "@ SAC", "W", 30, 14, null, null, 2], ["11/5", "vs DAL", "W", 52, 24, null, null, 8]] },
+  { team: "DAL", name: "쿠퍼 플래그", sub: "포워드 · 등번호 32",
+    stats: [["25.9", "득점"], ["6.9", "리바운드"], ["6.9", "어시스트"], ["50.0%", "야투율"], ["34.1", "출전 시간"]],
+    note: "11월 10일경 기준 시즌 평균(ESPN·CBS Sports)이라 이후 경기는 빠져 있어요. 시즌 최고 득점은 43점이에요.",
+    log: [["11/13", "@ MIN", "L", 12, 7, 3, 2, 0]] }
+];
+
+function renderPlayers() {
+  const cell = v => v === null ? '<span class="muted">—</span>' : v;
+  $("players").innerHTML = PLAYERS.map(p =>
+    '<article class="card">' +
+    '<div class="pl-head"><div class="badge ' + p.team + '">' + p.team + '</div><div><div class="team-name">' + p.name + '</div><div class="team-sub">' + NAMES[p.team] + ' · ' + p.sub + '</div></div></div>' +
+    '<div class="stats">' + p.stats.map(s => '<div class="stat"><div class="v">' + s[0] + '</div><div class="k">' + s[1] + '</div></div>').join("") + '</div>' +
+    '<div class="pl-note">' + p.note + '</div>' +
+    '<div class="pl-sub">최근 경기</div>' +
+    '<div class="pl-table scroll"><table><thead><tr><th>날짜</th><th>상대</th><th>결과</th><th class="n">득점</th><th class="n">리바</th><th class="n">어시</th><th class="n">스틸</th><th class="n">블록</th></tr></thead><tbody>' +
+    p.log.map(r => '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td><span class="res ' + r[2] + '">' + (r[2] === "W" ? "승" : "패") + '</span></td><td class="n">' + cell(r[3]) + '</td><td class="n">' + cell(r[4]) + '</td><td class="n">' + cell(r[5]) + '</td><td class="n">' + cell(r[6]) + '</td><td class="n">' + cell(r[7]) + '</td></tr>').join("") +
+    '</tbody></table></div></article>'
+  ).join("");
+}
+
+renderTeams(); renderH2H(); renderPlayers(); renderSched(); renderWest();
+setInterval(renderTeams, 60000);
+</script>
+</body>
+</html>
