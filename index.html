@@ -3,7 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>스퍼스 · 매버릭스 트래커</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NBA 트래커">
+<title>스퍼스 · 매버릭스 · 레이커스 트래커</title>
 <style>
 :root {
   box-sizing: border-box;
@@ -22,6 +24,8 @@
   --spurs-ink: #ffffff;
   --mavs: #1456c8;
   --mavs-ink: #ffffff;
+  --lakers: #552583;
+  --lakers-ink: #fdb927;
   --hl: #fff6d6;
   color-scheme: light;
 }
@@ -29,14 +33,14 @@
   :root:not([data-theme="light"]) {
     --bg: #101113; --surface: #1a1b1e; --surface-2: #24262a; --text: #ececea;
     --muted: #9a9ea6; --line: #2e3035; --win: #43c277; --loss: #ee6b6b; --live: #f5a524;
-    --spurs: #d4d6da; --spurs-ink: #17181a; --mavs: #5b93f0; --mavs-ink: #0c1220; --hl: #3a3417;
+    --spurs: #d4d6da; --spurs-ink: #17181a; --mavs: #5b93f0; --mavs-ink: #0c1220; --lakers: #a98ae0; --lakers-ink: #160b26; --hl: #3a3417;
     color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #101113; --surface: #1a1b1e; --surface-2: #24262a; --text: #ececea;
   --muted: #9a9ea6; --line: #2e3035; --win: #43c277; --loss: #ee6b6b; --live: #f5a524;
-  --spurs: #d4d6da; --spurs-ink: #17181a; --mavs: #5b93f0; --mavs-ink: #0c1220; --hl: #3a3417;
+  --spurs: #d4d6da; --spurs-ink: #17181a; --mavs: #5b93f0; --mavs-ink: #0c1220; --lakers: #a98ae0; --lakers-ink: #160b26; --hl: #3a3417;
   color-scheme: dark;
 }
 html { height: 100%; scroll-padding-top: env(safe-area-inset-top, 0px); }
@@ -56,8 +60,7 @@ h1 { font-size: 22px; margin: 0; letter-spacing: -0.02em; }
 }
 .notice b { color: var(--text); font-weight: 600; }
 
-.teams { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-@media (max-width: 640px) { .teams { grid-template-columns: 1fr; } }
+.teams { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .card { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
 .team-head { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 .badge {
@@ -66,6 +69,7 @@ h1 { font-size: 22px; margin: 0; letter-spacing: -0.02em; }
 }
 .badge.SAS { background: var(--spurs); color: var(--spurs-ink); }
 .badge.DAL { background: var(--mavs); color: var(--mavs-ink); }
+.badge.LAL { background: var(--lakers); color: var(--lakers-ink); }
 .team-name { font-weight: 650; font-size: 17px; letter-spacing: -0.01em; }
 .team-sub { font-size: 12.5px; color: var(--muted); }
 .record { display: flex; align-items: baseline; gap: 10px; margin-bottom: 12px; }
@@ -96,13 +100,13 @@ th, td { padding: 9px 10px; text-align: left; border-bottom: 1px solid var(--lin
 th { font-size: 12px; color: var(--muted); font-weight: 600; }
 td.n, th.n { text-align: right; }
 tr:last-child td { border-bottom: 0; }
-tr.hl-SAS td, tr.hl-DAL td { background: var(--hl); }
+tr.hl-SAS td, tr.hl-DAL td, tr.hl-LAL td { background: var(--hl); }
 .res { font-weight: 700; }
 .res.W { color: var(--win); } .res.L { color: var(--loss); } .res.P { color: var(--live); font-weight: 600; }
 .muted { color: var(--muted); }
 .h2h { font-size: 13.5px; }
-.players { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-@media (max-width: 640px) { .players { grid-template-columns: 1fr; } }
+.h2h .pair + .pair { margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); }
+.players { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px; }
 .pl-head { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); gap: 8px; margin-bottom: 8px; }
 .stat { background: var(--surface-2); border-radius: 10px; padding: 8px 10px; }
@@ -112,17 +116,32 @@ tr.hl-SAS td, tr.hl-DAL td { background: var(--hl); }
 .pl-sub { font-size: 12.5px; font-weight: 600; margin: 4px 0 2px; }
 .pl-table table { font-size: 13px; }
 .pl-table th, .pl-table td { padding: 7px 8px; }
+.bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; }
+.refresh {
+  border: 0; background: var(--text); color: var(--bg); border-radius: 999px; padding: 10px 18px;
+  font-size: 14.5px; font-weight: 600; font-family: inherit; cursor: pointer; -webkit-tap-highlight-color: transparent;
+}
+.refresh:disabled { opacity: .55; cursor: default; }
+.refresh .spin { display: inline-block; }
+.refresh:disabled .spin { animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.status { font-size: 12.5px; color: var(--muted); }
+.status.err { color: var(--loss); }
 footer { margin-top: 28px; font-size: 12px; color: var(--muted); }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <h1>스퍼스 · 매버릭스 트래커</h1>
+    <h1>스퍼스 · 매버릭스 · 레이커스 트래커</h1>
     <div class="stamp" id="stamp"></div>
   </header>
+  <div class="bar">
+    <button class="refresh" id="refresh" type="button"><span class="spin">↻</span> 지금 업데이트</button>
+    <span class="status" id="status"></span>
+  </div>
   <div class="notice">
-    <b>스냅샷 페이지예요.</b> 이 페이지는 외부 사이트에서 데이터를 직접 불러오지 못해서, 만든 시점의 데이터를 담고 있어요. 경기 시간은 한국 시간(KST)이고, 지난 경기 결과는 Claude에게 "트래커 업데이트해줘"라고 하면 다시 반영해 드려요.
+    버튼을 누르면 ESPN에서 전적·순위·일정·선수 기록을 새로 불러와요. 페이지를 열 때도 한 번 자동으로 불러와요. 불러오지 못하면 <b>11월 17일 기준 스냅샷</b>을 그대로 보여줘요. 경기 시간은 한국 시간(KST)이에요.
   </div>
 
   <section class="teams" id="teams"></section>
@@ -136,13 +155,14 @@ footer { margin-top: 28px; font-size: 12px; color: var(--muted); }
   <div class="tabs" role="tablist" id="tabs">
     <button class="tab" role="tab" data-t="SAS" aria-selected="true">샌안토니오</button>
     <button class="tab" role="tab" data-t="DAL" aria-selected="false">댈러스</button>
+    <button class="tab" role="tab" data-t="LAL" aria-selected="false">LA 레이커스</button>
   </div>
   <div class="card scroll" id="sched"></div>
 
   <h2>서부 컨퍼런스 순위</h2>
   <div class="card scroll" id="west"></div>
 
-  <footer>데이터 출처: SportRadar(순위·전적·최근 경기 기록), ESPN·CBS Sports(플래그 시즌 평균), NBA.com·Basketball-Reference 인용 보도(웸반야마 시즌 평균). 선수 시즌 평균은 출처마다 기준일이 달라 근사치예요.</footer>
+  <footer>데이터 출처: 버튼 업데이트는 ESPN 공개 데이터, 기본 스냅샷은 SportRadar(순위·전적·경기 기록)와 ESPN·CBS Sports·NBA.com 보도(선수 시즌 평균) 기준이에요. 스냅샷의 선수 시즌 평균은 근사치예요.</footer>
 </div>
 
 <script>
@@ -157,14 +177,14 @@ const NAMES = {
 };
 
 // [abbr, wins, losses, conferenceRank, divisionRank]
-const WEST = [
-  ["SAS",11,2,1,1],["LAL",11,2,2,1],["HOU",10,3,3,2],["POR",9,3,4,1],["MIN",9,3,5,2],
-  ["MEM",8,4,6,3],["GSW",8,5,7,2],["OKC",8,5,8,3],["DEN",6,4,9,4],["DAL",7,5,10,4],
-  ["PHX",5,6,11,3],["NOP",4,9,12,5],["LAC",3,8,13,4],["SAC",1,11,14,5],["UTA",1,12,15,5]
+let WEST = [
+  ["SAS",12,2,1,1],["LAL",12,2,2,1],["HOU",11,4,3,2],["MIN",10,4,4,1],["MEM",10,4,5,3],
+  ["POR",9,4,6,2],["OKC",9,5,7,3],["DEN",7,5,8,4],["GSW",8,6,9,2],["DAL",7,7,10,4],
+  ["PHX",6,7,11,3],["LAC",4,8,12,4],["NOP",5,10,13,5],["SAC",1,12,14,5],["UTA",1,13,15,5]
 ];
 
 // [startUTC, home, away, homeScore, awayScore]  (점수 null = 미종료/미반영)
-const GAMES = [
+let GAMES = [
   ["2026-10-21T01:30:00Z","SAS","OKC",104,116],
   ["2026-10-22T00:30:00Z","HOU","DAL",128,110],
   ["2026-10-23T23:00:00Z","IND","DAL",105,121],
@@ -188,9 +208,9 @@ const GAMES = [
   ["2026-11-12T01:00:00Z","CHI","SAS",119,124],
   ["2026-11-13T01:00:00Z","MIN","DAL",133,94],
   ["2026-11-14T02:30:00Z","SAS","GSW",123,85],
-  ["2026-11-15T00:30:00Z","CLE","DAL",null,null],
-  ["2026-11-15T22:00:00Z","UTA","SAS",null,null],
-  ["2026-11-15T23:00:00Z","BOS","DAL",null,null],
+  ["2026-11-15T00:30:00Z","CLE","DAL",127,117],
+  ["2026-11-15T22:00:00Z","UTA","SAS",102,110],
+  ["2026-11-15T23:00:00Z","BOS","DAL",131,94],
   ["2026-11-18T01:00:00Z","SAS","DET",null,null],
   ["2026-11-19T01:00:00Z","DAL","GSW",null,null],
   ["2026-11-20T01:00:00Z","SAS","LAC",null,null],
@@ -218,10 +238,41 @@ const GAMES = [
   ["2026-12-21T00:00:00Z","NOP","SAS",null,null],
   ["2026-12-23T03:30:00Z","GSW","DAL",null,null],
   ["2026-12-24T03:00:00Z","SAC","DAL",null,null],
-  ["2026-12-27T01:00:00Z","DAL","PHX",null,null]
+  ["2026-12-22T01:00:00Z","SAS","MIL",null,null],
+  ["2026-12-27T01:00:00Z","DAL","PHX",null,null],
+  ["2026-12-30T01:00:00Z","DAL","MIA",null,null],
+  ["2026-10-22T02:00:00Z","LAL","GSW",127,105],
+  ["2026-10-24T02:00:00Z","LAL","LAC",125,117],
+  ["2026-10-25T21:00:00Z","UTA","LAL",123,132],
+  ["2026-10-28T03:00:00Z","LAL","POR",129,136],
+  ["2026-10-29T02:30:00Z","LAC","LAL",87,103],
+  ["2026-10-31T02:00:00Z","GSW","LAL",112,95],
+  ["2026-11-02T02:00:00Z","LAL","TOR",131,125],
+  ["2026-11-03T03:00:00Z","LAL","MIA",138,117],
+  ["2026-11-05T03:00:00Z","SAC","LAL",103,116],
+  ["2026-11-07T03:00:00Z","LAL","POR",124,118],
+  ["2026-11-08T23:00:00Z","DET","LAL",116,121],
+  ["2026-11-10T00:00:00Z","ATL","LAL",114,124],
+  ["2026-11-12T01:00:00Z","MIL","LAL",112,123],
+  ["2026-11-15T21:00:00Z","PHX","LAL",123,131],
+  ["2026-11-18T04:00:00Z","LAL","CHA",null,null],
+  ["2026-11-19T03:00:00Z","LAL","UTA",null,null],
+  ["2026-11-21T03:00:00Z","LAL","SAC",null,null],
+  ["2026-11-24T03:00:00Z","LAL","UTA",null,null],
+  ["2026-11-29T21:00:00Z","MEM","LAL",null,null],
+  ["2026-12-01T00:30:00Z","HOU","LAL",null,null],
+  ["2026-12-03T01:00:00Z","NOP","LAL",null,null],
+  ["2026-12-15T03:00:00Z","LAL","NOP",null,null],
+  ["2026-12-17T02:30:00Z","MIN","LAL",null,null],
+  ["2026-12-19T01:00:00Z","MIN","LAL",null,null],
+  ["2026-12-20T02:00:00Z","DEN","LAL",null,null],
+  ["2026-12-22T03:00:00Z","LAL","IND",null,null],
+  ["2026-12-24T03:00:00Z","LAL","DEN",null,null],
+  ["2026-12-25T22:00:00Z","LAL","PHI",null,null]
 ].map(g => ({ t: new Date(g[0]), home: g[1], away: g[2], hs: g[3], as: g[4] }));
 
-const TEAMS = ["SAS", "DAL"];
+const TEAMS = ["SAS", "DAL", "LAL"];
+const DIV_NAME = { SAS: "서남부", DAL: "서남부", LAL: "태평양" };
 const STALE_MS = 3.5 * 3600 * 1000;
 const fmtDate = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", weekday: "short" });
 const fmtTime = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", hour: "2-digit", minute: "2-digit", hour12: false });
@@ -268,10 +319,10 @@ function renderTeams() {
       const started = nextG.t.getTime() <= now;
       nextHtml = '<div class="next"><div class="lbl">' + (started ? "진행 중이거나 방금 시작" : "다음 경기") + '</div>' +
         '<div class="big">' + (home ? "vs " : "@ ") + esc(NAMES[opp(nextG, t)]) + '</div>' +
-        '<div class="cd">' + whenText(nextG) + ' · ' + (started ? "결과 업데이트 필요" : countdown(nextG.t - now)) + '</div></div>';
+        '<div class="cd">' + whenText(nextG) + ' · ' + (nextG.live ? "진행 중 " + myScore(nextG.live, t) + " : " + theirScore(nextG.live, t) + (nextG.live.detail ? " (" + esc(nextG.live.detail) + ")" : "") : started ? "결과 업데이트 필요" : countdown(nextG.t - now)) + '</div></div>';
     }
     return '<article class="card">' +
-      '<div class="team-head"><div class="badge ' + t + '">' + t + '</div><div><div class="team-name">' + NAMES[t] + '</div><div class="team-sub">서부 컨퍼런스 · 서남부 디비전</div></div></div>' +
+      '<div class="team-head"><div class="badge ' + t + '">' + t + '</div><div><div class="team-name">' + NAMES[t] + '</div><div class="team-sub">서부 컨퍼런스 · ' + DIV_NAME[t] + ' 디비전</div></div></div>' +
       '<div class="record"><span class="wl">' + w + '-' + l + '</span><span class="pct">승률 ' + pct + '</span></div>' +
       '<div class="chips"><span class="chip">서부 ' + cr + '위</span><span class="chip">디비전 ' + dr + '위</span>' +
       (kind ? '<span class="chip">' + streak + (kind === "W" ? "연승" : "연패") + '</span>' : "") + '</div>' +
@@ -281,13 +332,21 @@ function renderTeams() {
 }
 
 function renderH2H() {
-  const hh = sorted(GAMES.filter(g => involves(g, "SAS") && involves(g, "DAL") && isFinal(g)));
-  let sw = 0, dw = 0;
-  const lines = hh.map(g => {
-    const sasWon = won(g, "SAS"); if (sasWon) sw++; else dw++;
-    return fmtDate.format(g.t) + " " + (g.home === "SAS" ? "SAS" : "DAL") + " 홈 · SAS " + myScore(g, "SAS") + " : " + theirScore(g, "SAS") + " DAL";
-  });
-  $("h2h").innerHTML = "<b>올 시즌 맞대결</b> &nbsp; 스퍼스 " + sw + "승 " + dw + "패<div class=\"muted\" style=\"margin-top:4px\">" + lines.join("<br>") + "</div>";
+  const pairs = [];
+  for (let i = 0; i < TEAMS.length; i++) for (let j = i + 1; j < TEAMS.length; j++) pairs.push([TEAMS[i], TEAMS[j]]);
+  const html = pairs.map(([a, b]) => {
+    const hh = sorted(GAMES.filter(g => involves(g, a) && involves(g, b)));
+    if (!hh.length) return "";
+    const fin = hh.filter(isFinal);
+    let aw = 0; fin.forEach(g => { if (won(g, a)) aw++; });
+    const lines = hh.map(g => isFinal(g)
+      ? fmtDate.format(g.t) + " · " + g.home + " 홈 · " + a + " " + myScore(g, a) + " : " + theirScore(g, a) + " " + b
+      : fmtDate.format(g.t) + " " + fmtTime.format(g.t) + " · " + g.home + " 홈 · 예정");
+    return '<div class="pair"><b>' + NAMES[a].split(" ").pop() + ' vs ' + NAMES[b].split(" ").pop() + '</b> &nbsp; ' +
+      (fin.length ? a + " " + aw + "승 " + (fin.length - aw) + "패" : "아직 맞대결 없음") +
+      '<div class="muted" style="margin-top:4px">' + lines.join("<br>") + '</div></div>';
+  }).join("");
+  $("h2h").innerHTML = "<b>올 시즌 맞대결</b>" + '<div style="margin-top:8px">' + (html || '<span class="muted">맞대결 일정 없음</span>') + "</div>";
 }
 
 let cur = "SAS";
@@ -299,12 +358,14 @@ function renderSched() {
     if (isFinal(g)) {
       const W = won(g, t);
       res = '<span class="res ' + (W ? "W" : "L") + '">' + (W ? "승" : "패") + '</span> ' + myScore(g, t) + ' : ' + theirScore(g, t);
+    } else if (g.live) {
+      res = '<span class="res P">진행 중 ' + esc(g.live.detail || "") + '</span> ' + myScore(g.live, t) + ' : ' + theirScore(g.live, t);
     } else if (g.t.getTime() <= now) {
       res = '<span class="res P">결과 미반영</span>';
     } else {
       res = '<span class="muted">' + countdown(g.t - now) + '</span>';
     }
-    return '<tr' + (isFinal(g) ? "" : "") + '><td>' + whenText(g) + '</td><td>' + (home ? "홈" : "원정") + '</td><td>' + esc(NAMES[o]) + '</td><td>' + res + '</td></tr>';
+    return '<tr><td>' + whenText(g) + '</td><td>' + (home ? "홈" : "원정") + '</td><td>' + esc(NAMES[o]) + '</td><td>' + res + '</td></tr>';
   }).join("");
   $("sched").innerHTML = '<table><thead><tr><th>일시 (KST)</th><th>구분</th><th>상대</th><th>결과</th></tr></thead><tbody>' + rows + '</tbody></table>';
   document.querySelectorAll(".tab").forEach(b => b.setAttribute("aria-selected", b.dataset.t === t ? "true" : "false"));
@@ -323,18 +384,23 @@ document.getElementById("tabs").addEventListener("click", e => {
   cur = b.dataset.t; renderSched();
 });
 
-$("stamp").textContent = "데이터 기준: 2026년 11월 15일";
-const PLAYERS = [
+
+let PLAYERS = [
   { team: "SAS", name: "빅터 웸반야마", sub: "센터 · 등번호 1",
-    stats: [["28.8", "득점 ≈"], ["11.7", "리바운드 ≈"], ["4.3", "블록 ≈"]],
-    note: "13경기 기준 추정치예요. 11월 10일까지 11경기 평균(30.1점·11.9리바·4.5블록, NBA.com 인용 보도)에 이후 두 경기 박스스코어를 합산했고, 반올림 오차가 있어요. 시즌 최고는 52점·24리바운드(11/5 댈러스전), 블록 9개(11/10 피닉스전)예요.",
-    log: [["11/14", "vs GSW", "W", 12, 12, 6, 1, 2], ["11/12", "@ CHI", "W", 32, 9, 1, 2, 5], ["11/10", "@ PHX", "W", 40, 11, null, null, 9], ["11/8", "@ POR", "W", 29, 7, null, null, 2], ["11/7", "@ SAC", "W", 30, 14, null, null, 2], ["11/5", "vs DAL", "W", 52, 24, null, null, 8]] },
+    stats: [["28.6", "득점 ≈"], ["11.6", "리바운드 ≈"], ["4.4", "블록 ≈"]],
+    note: "스냅샷: 14경기 기준 추정치예요. 11월 10일까지 11경기 평균(NBA.com 인용 보도)에 이후 세 경기 박스스코어를 합산했고, 반올림 오차가 있어요. 시즌 최고는 52점·24리바운드(11/5 댈러스전), 블록 9개(11/10 피닉스전)예요.",
+    log: [["11/16", "@ UTA", "W", 26, 10, 6, 1, 5], ["11/14", "vs GSW", "W", 12, 12, 6, 1, 2], ["11/12", "@ CHI", "W", 32, 9, 1, 2, 5], ["11/10", "@ PHX", "W", 40, 11, null, null, 9], ["11/8", "@ POR", "W", 29, 7, null, null, 2], ["11/7", "@ SAC", "W", 30, 14, null, null, 2]] },
   { team: "DAL", name: "쿠퍼 플래그", sub: "포워드 · 등번호 32",
     stats: [["25.9", "득점"], ["6.9", "리바운드"], ["6.9", "어시스트"], ["50.0%", "야투율"], ["34.1", "출전 시간"]],
-    note: "11월 10일경 기준 시즌 평균(ESPN·CBS Sports)이라 이후 경기는 빠져 있어요. 시즌 최고 득점은 43점이에요.",
-    log: [["11/13", "@ MIN", "L", 12, 7, 3, 2, 0]] }
+    note: "스냅샷: 11월 10일경 기준 시즌 평균(ESPN·CBS Sports)이라 이후 세 경기는 빠져 있어요. 시즌 최고 득점은 43점이에요.",
+    log: [["11/16", "@ BOS", "L", 17, 3, 4, 1, 1], ["11/15", "@ CLE", "L", 18, 8, 5, 0, 1], ["11/13", "@ MIN", "L", 12, 7, 3, 2, 0]] },
+  { team: "LAL", name: "루카 돈치치", sub: "가드 · 등번호 77",
+    stats: [["39.3", "득점"], ["7.8", "리바운드"], ["7.9", "어시스트"], ["49.8%", "야투율"], ["36.3", "출전 시간"]],
+    note: "스냅샷: 11월 중순 기준 10경기 평균(ESPN 데이터 인용 사이트)이에요. 시즌 최고는 52점(유타전)이에요.",
+    log: [["11/16", "@ PHX", "W", 43, 3, 9, 1, 0], ["11/12", "@ MIL", "W", 32, 5, 5, 2, 0]] }
 ];
 
+const RECENT_GAMES = 3;
 function renderPlayers() {
   const cell = v => v === null ? '<span class="muted">—</span>' : v;
   $("players").innerHTML = PLAYERS.map(p =>
@@ -344,13 +410,186 @@ function renderPlayers() {
     '<div class="pl-note">' + p.note + '</div>' +
     '<div class="pl-sub">최근 경기</div>' +
     '<div class="pl-table scroll"><table><thead><tr><th>날짜</th><th>상대</th><th>결과</th><th class="n">득점</th><th class="n">리바</th><th class="n">어시</th><th class="n">스틸</th><th class="n">블록</th></tr></thead><tbody>' +
-    p.log.map(r => '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td><span class="res ' + r[2] + '">' + (r[2] === "W" ? "승" : "패") + '</span></td><td class="n">' + cell(r[3]) + '</td><td class="n">' + cell(r[4]) + '</td><td class="n">' + cell(r[5]) + '</td><td class="n">' + cell(r[6]) + '</td><td class="n">' + cell(r[7]) + '</td></tr>').join("") +
+    p.log.slice(0, RECENT_GAMES).map(r => '<tr><td>' + r[0] + '</td><td>' + r[1] + '</td><td><span class="res ' + r[2] + '">' + (r[2] === "W" ? "승" : "패") + '</span></td><td class="n">' + cell(r[3]) + '</td><td class="n">' + cell(r[4]) + '</td><td class="n">' + cell(r[5]) + '</td><td class="n">' + cell(r[6]) + '</td><td class="n">' + cell(r[7]) + '</td></tr>').join("") +
     '</tbody></table></div></article>'
   ).join("");
 }
 
-renderTeams(); renderH2H(); renderPlayers(); renderSched(); renderWest();
+// ---------- 실시간 업데이트 (ESPN 공개 데이터) ----------
+const ESPN_SITE = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba";
+const ESPN_STANDINGS = "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings";
+const ESPN_ATHLETE = "https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba/athletes/";
+const ESPN_SLUG = { SAS: "sa", DAL: "dal", LAL: "lal" };
+const ESPN_ABBR = { SA: "SAS", GS: "GSW", NO: "NOP", NY: "NYK", UTAH: "UTA", WSH: "WAS", PHO: "PHX", BRK: "BKN" };
+const normAbbr = a => { a = String(a || "").toUpperCase(); return ESPN_ABBR[a] || a; };
+const DIVISION = {
+  SAS: "SW", HOU: "SW", MEM: "SW", DAL: "SW", NOP: "SW",
+  POR: "NW", MIN: "NW", DEN: "NW", OKC: "NW", UTA: "NW",
+  LAL: "PAC", GSW: "PAC", PHX: "PAC", LAC: "PAC", SAC: "PAC"
+};
+const PLAYER_META = [
+  { team: "SAS", match: /wembanyama/i, fallbackId: "5104157",
+    keys: [["PTS", "득점"], ["REB", "리바운드"], ["BLK", "블록"], ["GP", "경기"]] },
+  { team: "DAL", match: /flagg/i, fallbackId: null,
+    keys: [["PTS", "득점"], ["REB", "리바운드"], ["AST", "어시스트"], ["FG%", "야투율"], ["MIN", "출전 시간"]] },
+  { team: "LAL", match: /don[cč]i[cć]/i, fallbackId: "3945274",
+    keys: [["PTS", "득점"], ["REB", "리바운드"], ["AST", "어시스트"], ["FG%", "야투율"], ["MIN", "출전 시간"]] }
+];
+
+function store(k, v) { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch (e) { return null; } }
+
+async function getJSON(url) {
+  const ctl = new AbortController();
+  const timer = setTimeout(() => ctl.abort(), 12000);
+  try {
+    const r = await fetch(url + (url.includes("?") ? "&" : "?") + "_=" + Date.now(), { signal: ctl.signal, cache: "no-store" });
+    if (!r.ok) throw new Error("HTTP " + r.status);
+    return await r.json();
+  } finally { clearTimeout(timer); }
+}
+
+const numScore = s => {
+  if (s === null || s === undefined) return null;
+  if (typeof s === "object") s = s.value !== undefined ? s.value : s.displayValue;
+  const n = Number(s); return Number.isFinite(n) ? n : null;
+};
+
+async function fetchSchedule(t) {
+  const j = await getJSON(ESPN_SITE + "/teams/" + ESPN_SLUG[t] + "/schedule");
+  return (j.events || []).map(ev => {
+    const c = (ev.competitions || [])[0]; if (!c) return null;
+    const h = c.competitors.find(x => x.homeAway === "home"), a = c.competitors.find(x => x.homeAway === "away");
+    if (!h || !a) return null;
+    const st = (c.status || ev.status || {}).type || {};
+    const g = { t: new Date(c.date || ev.date), home: normAbbr(h.team.abbreviation), away: normAbbr(a.team.abbreviation), hs: null, as: null };
+    if (st.completed) { g.hs = numScore(h.score); g.as = numScore(a.score); }
+    else if (st.state === "in") g.live = { home: g.home, away: g.away, hs: numScore(h.score), as: numScore(a.score), detail: st.shortDetail || "" };
+    if (st.name === "STATUS_POSTPONED" || st.name === "STATUS_CANCELED") return null;
+    return g;
+  }).filter(Boolean);
+}
+
+async function fetchStandings() {
+  const j = await getJSON(ESPN_STANDINGS);
+  const west = (j.children || []).find(c => /west/i.test((c.name || "") + (c.abbreviation || "")));
+  if (!west) throw new Error("서부 순위 없음");
+  const rows = west.standings.entries.map(e => {
+    const stat = n => { const s = (e.stats || []).find(s => s.name === n || s.type === n); return s ? Number(s.value) : null; };
+    return { abbr: normAbbr(e.team.abbreviation), w: stat("wins"), l: stat("losses"), seed: stat("playoffSeed") };
+  }).filter(r => r.w !== null && r.l !== null);
+  const pct = r => r.w / Math.max(1, r.w + r.l);
+  rows.sort((a, b) => (a.seed && b.seed) ? a.seed - b.seed : pct(b) - pct(a));
+  rows.forEach((r, i) => { r.cr = i + 1; });
+  return rows.map(r => {
+    const div = rows.filter(x => DIVISION[x.abbr] && DIVISION[x.abbr] === DIVISION[r.abbr]);
+    return [r.abbr, r.w, r.l, r.cr, div.indexOf(r) + 1 || 1];
+  });
+}
+
+async function playerId(meta) {
+  const key = "trk-pid-" + meta.team;
+  const cached = store(key); if (cached) return cached;
+  try {
+    const j = await getJSON(ESPN_SITE + "/teams/" + ESPN_SLUG[meta.team] + "/roster");
+    const list = (j.athletes || []).flatMap(a => a.items ? a.items : [a]);
+    const p = list.find(a => meta.match.test(a.fullName || a.displayName || ""));
+    if (p) { store(key, String(p.id)); return String(p.id); }
+  } catch (e) { /* 아래 기본값 사용 */ }
+  if (meta.fallbackId) return meta.fallbackId;
+  throw new Error("선수 ID를 찾지 못함");
+}
+
+const fmtMD = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric" });
+
+async function fetchPlayer(meta, old) {
+  const id = await playerId(meta);
+  const [ov, gl] = await Promise.allSettled([getJSON(ESPN_ATHLETE + id + "/overview"), getJSON(ESPN_ATHLETE + id + "/gamelog")]);
+  const p = Object.assign({}, old);
+  let gotAny = false;
+
+  if (ov.status === "fulfilled" && ov.value.statistics) {
+    const s = ov.value.statistics, labels = s.labels || [];
+    const split = (s.splits || []).find(x => /regular/i.test(x.displayName || "")) || (s.splits || [])[0];
+    if (split && split.stats) {
+      const val = k => { const i = labels.indexOf(k); return i >= 0 ? split.stats[i] : null; };
+      const stats = meta.keys.map(([k, name]) => {
+        let v = val(k); if (v === null || v === undefined) return null;
+        if (k === "FG%" && !String(v).includes("%")) v = v + "%";
+        return [String(v), name];
+      }).filter(Boolean);
+      if (stats.length) {
+        p.stats = stats; gotAny = true;
+        const gp = val("GP");
+        p.note = "ESPN 정규시즌 평균" + (gp ? " (" + gp + "경기)" : "") + "이에요.";
+      }
+    }
+  }
+
+  if (gl.status === "fulfilled") {
+    const j = gl.value, labels = j.labels || [], evMeta = j.events || {};
+    const st = (j.seasonTypes || []).find(x => /regular/i.test(x.displayName || "")) || (j.seasonTypes || [])[0];
+    const rows = [];
+    ((st && st.categories) || []).forEach(cat => (cat.events || []).forEach(e => {
+      const m = evMeta[e.eventId]; if (!m || !e.stats) return;
+      const v = k => { const i = labels.indexOf(k); if (i < 0) return null; const n = Number(e.stats[i]); return Number.isFinite(n) ? n : null; };
+      const d = new Date(m.gameDate);
+      rows.push({ d, r: [fmtMD.format(d).replace(/\.\s?/g, "/").replace(/\/$/, ""), ((m.atVs === "@") ? "@ " : "vs ") + normAbbr(m.opponent && m.opponent.abbreviation),
+        m.gameResult === "W" ? "W" : "L", v("PTS"), v("REB"), v("AST"), v("STL"), v("BLK")] });
+    }));
+    rows.sort((a, b) => b.d - a.d);
+    if (rows.length) { p.log = rows.slice(0, RECENT_GAMES).map(x => x.r); gotAny = true; }
+  }
+  if (!gotAny) throw new Error("선수 기록 없음");
+  return p;
+}
+
+const fmtStamp = new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", month: "numeric", day: "numeric", weekday: "short", hour: "2-digit", minute: "2-digit", hour12: false });
+
+function renderAll() { renderTeams(); renderH2H(); renderPlayers(); renderSched(); renderWest(); }
+
+async function refresh() {
+  const btn = $("refresh"), status = $("status");
+  btn.disabled = true; status.className = "status"; status.textContent = "불러오는 중…";
+  const jobs = [
+    Promise.all(TEAMS.map(fetchSchedule)),
+    fetchStandings(),
+    ...PLAYER_META.map((m, i) => fetchPlayer(m, PLAYERS[i]))
+  ];
+  const res = await Promise.allSettled(jobs);
+  const failed = [];
+
+  if (res[0].status === "fulfilled") {
+    const map = new Map();
+    res[0].value.flat().forEach(g => map.set(g.t.toISOString().slice(0, 13) + g.home + g.away, g));
+    if (map.size) GAMES = Array.from(map.values()); else failed.push("일정");
+  } else failed.push("일정");
+
+  if (res[1].status === "fulfilled" && res[1].value.length >= 10) WEST = res[1].value; else failed.push("순위");
+
+  PLAYER_META.forEach((m, i) => {
+    const r = res[2 + i];
+    if (r.status === "fulfilled") PLAYERS[i] = r.value; else failed.push(PLAYERS[i].name);
+  });
+
+  renderAll();
+  const total = 2 + PLAYER_META.length;
+  if (failed.length === total) {
+    status.className = "status err";
+    status.textContent = "불러오지 못했어요. 11/17 스냅샷을 보여주고 있어요.";
+  } else {
+    status.textContent = "업데이트: " + fmtStamp.format(new Date()) + (failed.length ? " · 일부 실패(" + failed.join(", ") + ")" : "");
+    if (failed.length) status.className = "status err";
+  }
+  $("stamp").textContent = "";
+  btn.disabled = false;
+}
+
+$("refresh").addEventListener("click", refresh);
+$("stamp").textContent = "스냅샷: 11월 17일 22시 (KST)";
+renderAll();
+refresh();
 setInterval(renderTeams, 60000);
+
 </script>
 </body>
 </html>
