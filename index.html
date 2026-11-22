@@ -397,27 +397,35 @@ document.getElementById("tabs").addEventListener("click", e => {
 
 
 let PLAYERS = [
-  { team: "SAS", name: "빅터 웸반야마", sub: "센터 · 등번호 1", num: "1", photo: "photos/wembanyama.jpg",
+  { team: "SAS", name: "빅터 웸반야마", sub: "센터 · 등번호 1", num: "1", photo: "photos/wembanyama",
     stats: [["28.6", "득점 ≈"], ["11.6", "리바운드 ≈"], ["4.4", "블록 ≈"]],
     note: "스냅샷: 14경기 기준 추정치예요. 11월 10일까지 11경기 평균(NBA.com 인용 보도)에 이후 세 경기 박스스코어를 합산했고, 반올림 오차가 있어요. 시즌 최고는 52점·24리바운드(11/5 댈러스전), 블록 9개(11/10 피닉스전)예요.",
     log: [["11/16", "@ UTA", "W", 26, 10, 6, 1, 5], ["11/14", "vs GSW", "W", 12, 12, 6, 1, 2], ["11/12", "@ CHI", "W", 32, 9, 1, 2, 5], ["11/10", "@ PHX", "W", 40, 11, null, null, 9], ["11/8", "@ POR", "W", 29, 7, null, null, 2], ["11/7", "@ SAC", "W", 30, 14, null, null, 2]] },
-  { team: "DAL", name: "쿠퍼 플래그", sub: "포워드 · 등번호 32", num: "32", photo: "photos/flagg.jpg",
+  { team: "DAL", name: "쿠퍼 플래그", sub: "포워드 · 등번호 32", num: "32", photo: "photos/flagg",
     stats: [["25.9", "득점"], ["6.9", "리바운드"], ["6.9", "어시스트"], ["50.0%", "야투율"], ["34.1", "출전 시간"]],
     note: "스냅샷: 11월 10일경 기준 시즌 평균(ESPN·CBS Sports)이라 이후 세 경기는 빠져 있어요. 시즌 최고 득점은 43점이에요.",
     log: [["11/16", "@ BOS", "L", 17, 3, 4, 1, 1], ["11/15", "@ CLE", "L", 18, 8, 5, 0, 1], ["11/13", "@ MIN", "L", 12, 7, 3, 2, 0]] },
-  { team: "LAL", name: "루카 돈치치", sub: "가드 · 등번호 77", num: "77", photo: "photos/doncic.jpg",
+  { team: "LAL", name: "루카 돈치치", sub: "가드 · 등번호 77", num: "77", photo: "photos/doncic",
     stats: [["39.3", "득점"], ["7.8", "리바운드"], ["7.9", "어시스트"], ["49.8%", "야투율"], ["36.3", "출전 시간"]],
     note: "스냅샷: 11월 중순 기준 10경기 평균(ESPN 데이터 인용 사이트)이에요. 시즌 최고는 52점(유타전)이에요.",
     log: [["11/16", "@ PHX", "W", 43, 3, 9, 1, 0], ["11/12", "@ MIL", "W", 32, 5, 5, 2, 0]] }
 ];
 
 const RECENT_GAMES = 3;
+// 사진 확장자/대소문자가 달라도 찾도록 차례로 시도
+const PHOTO_EXTS = ["jpg", "jpeg", "png", "webp", "heic", "JPG", "JPEG", "PNG", "HEIC"];
+function nextPhoto(img) {
+  const i = Number(img.dataset.i) + 1;
+  if (i >= PHOTO_EXTS.length) { img.remove(); return; }
+  img.dataset.i = i;
+  img.src = img.dataset.base + "." + PHOTO_EXTS[i];
+}
 function renderPlayers() {
   const cell = v => v === null ? '<span class="muted">—</span>' : v;
   $("players").innerHTML = PLAYERS.map(p =>
     '<article class="card">' +
     '<div class="pl-head"><div class="avatar ' + p.team + '"><span class="num">' + p.num + '</span><span class="tm">' + p.team + '</span>' +
-    (p.photo ? '<img src="' + p.photo + '" alt="" onerror="this.remove()">' : '') + '</div><div><div class="team-name">' + p.name + '</div><div class="team-sub">' + NAMES[p.team] + ' · ' + p.sub + '</div></div></div>' +
+    (p.photo ? '<img src="' + p.photo + '.' + PHOTO_EXTS[0] + '" data-base="' + p.photo + '" data-i="0" alt="" onerror="nextPhoto(this)">' : '') + '</div><div><div class="team-name">' + p.name + '</div><div class="team-sub">' + NAMES[p.team] + ' · ' + p.sub + '</div></div></div>' +
     '<div class="stats">' + p.stats.map(s => '<div class="stat"><div class="v">' + s[0] + '</div><div class="k">' + s[1] + '</div></div>').join("") + '</div>' +
     '<div class="pl-note">' + p.note + '</div>' +
     '<div class="pl-sub">최근 경기</div>' +
